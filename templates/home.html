@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitConverter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container text-center mx-auto p-2" style="width: 500px;">
+        <h1 class="card-title fw-bold text-center">Unit converter</h1>
+        <form method="post" a>
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label class="form-label">Choose Unit Type:</label><br>
+                <label>
+                    <input type="radio" name="measurement" value="length" {% if form_data.measurement == 'length' %}checked{% endif %}> Length
+                </label>
+                <label>
+                    <input type="radio" name="measurement" value="temperature" {% if form_data.measurement == 'temperature' %}checked{% endif %}> Temperature
+                </label>
+                <label>
+                    <input type="radio" name="measurement" value="weight" {% if form_data.measurement == 'weight' %}checked{% endif %}> Weight
+                </label>
+            </div>
+            <div class="form-group mb-3">
+                <label for="value" class="form-label">Value:</label>
+                <input type="number" name="value" id="value" class="form-control" value="{{ form_data.value }}" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="from" class="form-label">From:</label>
+                <select name="from" id="from" class="form-select" required>
+                    <option value="">Select unit</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="to" class="form-label">To:</label>
+                <select name="to" id="to" class="form-select" required>
+                    <option value="">Select unit</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Convert" class="btn btn-outline-primary">
+            </div>
+        </form>
+        {% if result %}
+            <div class="alert alert-success mt-3">
+                Result: {{ result }} {{form_data.to}}
+            </div>
+        {% endif %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script>
+        const units = {
+            length: {
+                mm: 'Millimeter',
+                cm: 'Centimeter',
+                m: 'Meter',
+                km: 'Kilometer',
+                in: 'Inch',
+                f: 'Foot',
+                yd: 'Yard',
+                ml: 'Mile'
+            },
+            temperature: {
+                c: 'Celsius',
+                f: 'Fahrenheit',
+                k: 'Kelvin'
+            },
+            weight: {
+                mg: 'Milligram',
+                g: 'Gram',
+                kg: 'Kilogram',
+                oz: 'Ounce',
+                lb: 'Pound'
+            }
+        };
+
+        function populateSelects(measurement, selectedFrom = '', selectedTo = '') {
+            const fromSelect = document.getElementById('from');
+            const toSelect = document.getElementById('to');
+            fromSelect.innerHTML = '<option value="">Select unit</option>';
+            toSelect.innerHTML = '<option value="">Select unit</option>';
+            if (units[measurement]) {
+                for (const [value, text] of Object.entries(units[measurement])) {
+                    const fromSelected = value === selectedFrom ? ' selected' : '';
+                    const toSelected = value === selectedTo ? ' selected' : '';
+                    fromSelect.innerHTML += `<option value="${value}"${fromSelected}>${text}</option>`;
+                    toSelect.innerHTML += `<option value="${value}"${toSelected}>${text}</option>`;
+                }
+            }
+        }
+
+        document.querySelectorAll('input[name="measurement"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                populateSelects(this.value);
+            });
+        }); 
+
+        // On load, if measurement is set, populate selects
+        const formData = form_data_json|safe ;
+        if (formData.measurement) {
+            populateSelects(formData.measurement, formData.from, formData.to);
+        }
+    </script>
+</body>
+
+</html>
